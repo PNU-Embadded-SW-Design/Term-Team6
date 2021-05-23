@@ -99,13 +99,39 @@ static void AppTaskStart (void *p_arg){
   while(ADC_GetCalibrationStatus(ADC1));
   
   
+  
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA,ENABLE);
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1,ENABLE);
+  
+  //TXD write pin9
+  gpio_init.GPIO_Mode = GPIO_Mode_AF_PP;
+  gpio_init.GPIO_Pin = GPIO_Pin_9;
+  gpio_init.GPIO_Speed = GPIO_Speed_50MHz;
+  GPIO_Init(GPIOA,&gpio_init);
+  
+  //Rx read pin10
+  gpio_init.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+  gpio_init.GPIO_Pin = GPIO_Pin_10;
+  GPIO_Init(GPIOA,&gpio_init);
+  
+  //uart1 Task
+  USART_InitTypeDef uart_init;
+  uart_init.USART_BaudRate = 9600;
+  uart_init.USART_WordLength = USART_WordLength_8b;
+  uart_init.USART_StopBits = USART_StopBits_1;
+  uart_init.USART_Parity = USART_Parity_No;
+  uart_init.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+  uart_init.USART_Mode = USART_Mode_Rx|USART_Mode_Tx;
+  USART_Init(USART1,&uart_init);
+  USART_Cmd(USART1,ENABLE);
+  
   // task 를 round robin 으로 하시 위해서 
   OSSchedRoundRobinCfg((CPU_BOOLEAN)DEF_TRUE, 
                          (OS_TICK    )10,
                          (OS_ERR    *)&err);
   
   
-  // Water Pump Task
+  // Water Sensor Task
   OSTaskCreate((OS_TCB *)&AppWaterSensor_TCB,
                (CPU_CHAR *)"Water Sensor Task",
                (OS_TASK_PTR)AppWaterSensorTask,
@@ -142,6 +168,8 @@ static void AppTaskStart (void *p_arg){
   CPU_IntDisMeasMaxCurReset();
   
   while(DEF_TRUE){
+    while(!USART_GetFlagStatus(USART1,USART_FLAG_TXE));
+    USART_SendData(USART1,'a');
     OSTimeDlyHMSM(0,0,0,100,
                   OS_OPT_TIME_HMSM_STRICT,
                   &err);
@@ -157,9 +185,10 @@ static void AppWaterSensorTask (void *p_arg){
     while(ADC_GetFlagStatus(ADC1,0x2) == RESET);
     adc_value = ADC_GetConversionValue(ADC1);
     
+    signal = adc_value;
+    
     signal = GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_2); // down
     
-    signal = adc_value;
     if(signal == 0){
       GPIO_ResetBits(GPIOD, GPIO_Pin_11);
     }else{
@@ -175,8 +204,10 @@ static void AppTask1 (void *p_arg){
   while(1){
     if( ccc >= 100000){
       f = !f;
-      if(f == 0)
+      if(f == 0){
+        USART_SendData(USART1,'a');
         GPIO_SetBits(GPIOD,GPIO_Pin_2);
+      }
       else
         GPIO_ResetBits(GPIOD, GPIO_Pin_2);
       ccc = 0;
