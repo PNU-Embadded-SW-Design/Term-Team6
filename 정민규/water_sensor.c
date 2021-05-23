@@ -1,15 +1,15 @@
 #include <includes.h>
 
 static OS_TCB AppTaskStartTCB;
-static OS_TCB AppWaterPump_TCB;
+static OS_TCB AppWaterSensor_TCB;
 static OS_TCB AppTask1_TCB;     //test task
 
 static CPU_STK AppTaskStartStk[APP_TASK_START_STK_SIZE];
-static CPU_STK AppWaterPump_Stk[128];
+static CPU_STK AppWaterSensor_Stk[128];
 static CPU_STK AppTask1_Stk[APP_TASK_START_STK_SIZE]; // test stk
 
 static void AppTaskStart (void *p_arg);
-static void AppWaterPumpTask (void *p_arg);
+static void AppWaterSensorTask (void *p_arg);
 static void AppTask1 (void *p_arg); // test task
 
 
@@ -25,7 +25,7 @@ int main (void){
   //led 불빛 task 
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOD,ENABLE);//clock give
   //RCC_APB2Periph_ADC1
-  gpio_init.GPIO_Pin = (GPIO_Pin_2 | GPIO_Pin_3| GPIO_Pin_4| GPIO_Pin_7| GPIO_Pin_11);
+  gpio_init.GPIO_Pin = (GPIO_Pin_2);
   gpio_init.GPIO_Mode = GPIO_Mode_Out_PP;
   gpio_init.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_Init(GPIOD,&gpio_init);
@@ -37,6 +37,8 @@ int main (void){
   gpio_init2.GPIO_Mode = GPIO_Mode_IN_FLOATING;
   gpio_init2.GPIO_Speed = GPIO_Speed_2MHz;
   GPIO_Init(GPIOC,&gpio_init2);
+  
+  //ADC 설정
   
   OSTaskCreate((OS_TCB     *)&AppTaskStartTCB,                /* Create the start task                                */
                  (CPU_CHAR   *)"App Task Start",
@@ -76,12 +78,12 @@ static void AppTaskStart (void *p_arg){
   
   
   // Water Pump Task
-  OSTaskCreate((OS_TCB *)&AppWaterPump_TCB,
-               (CPU_CHAR *)"Water Pump Task",
-               (OS_TASK_PTR)AppWaterPumpTask,
+  OSTaskCreate((OS_TCB *)&AppWaterSensor_TCB,
+               (CPU_CHAR *)"Water Sensor Task",
+               (OS_TASK_PTR)AppWaterSensorTask,
                (void *) 0,
                (OS_PRIO) 5,
-               (CPU_STK *) &AppWaterPump_Stk[0],
+               (CPU_STK *) &AppWaterSensor_Stk[0],
                (CPU_STK_SIZE) APP_TASK_START_STK_SIZE/10,
                (CPU_STK_SIZE) APP_TASK_START_STK_SIZE,
                (OS_MSG_QTY) 0,
@@ -117,7 +119,7 @@ static void AppTaskStart (void *p_arg){
                   &err);
   }
 }
-static void AppWaterPumpTask (void *p_arg){
+static void AppWaterSensorTask (void *p_arg){
   OS_ERR err;
   p_arg = p_arg;
   while(1){
