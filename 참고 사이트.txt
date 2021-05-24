@@ -1,5 +1,0 @@
-L9110 모터드라이버 회로 설계 할때 참고함
-http://makeshare.org/bbs/board.php?bo_table=arduinomotor&wr_id=11
-
-수위 센서(Water Level Sensor) 제어 회로 참고용
-https://steemit.com/kr-arduino/@codingman/water-level-sensor
