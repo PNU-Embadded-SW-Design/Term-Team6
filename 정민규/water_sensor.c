@@ -12,6 +12,8 @@ static void AppTaskStart (void *p_arg);
 static void AppWaterSensorTask (void *p_arg);
 static void AppTask1 (void *p_arg); // test task
 
+void write(int n);
+
 
 int signal = 0;
 
@@ -169,7 +171,7 @@ static void AppTaskStart (void *p_arg){
   
   while(DEF_TRUE){
     while(!USART_GetFlagStatus(USART1,USART_FLAG_TXE));
-    USART_SendData(USART1,'a');
+    //USART_SendData(USART1,'a');
     OSTimeDlyHMSM(0,0,0,100,
                   OS_OPT_TIME_HMSM_STRICT,
                   &err);
@@ -188,7 +190,7 @@ static void AppWaterSensorTask (void *p_arg){
     signal = adc_value;
     
     signal = GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_2); // down
-    
+    write(adc_value);
     if(signal == 0){
       GPIO_ResetBits(GPIOD, GPIO_Pin_11);
     }else{
@@ -203,15 +205,28 @@ static void AppTask1 (void *p_arg){
   int f = 0;
   while(1){
     if( ccc >= 100000){
-      f = !f;
-      if(f == 0){
-        USART_SendData(USART1,'a');
-        GPIO_SetBits(GPIOD,GPIO_Pin_2);
-      }
-      else
-        GPIO_ResetBits(GPIOD, GPIO_Pin_2);
+      //write(1123);
       ccc = 0;
     }
     ccc +=1;
   }
+}
+void write(int n){
+  char c=0x30;
+  c = 0x30 + (n / 1000)%10;
+  while(!USART_GetFlagStatus(USART1,USART_FLAG_TXE));
+  USART_SendData(USART1,c);
+  c = 0x30 + (n / 100)%10;
+  while(!USART_GetFlagStatus(USART1,USART_FLAG_TXE));
+  USART_SendData(USART1,c);
+  c = 0x30 + (n / 10)%10;
+  while(!USART_GetFlagStatus(USART1,USART_FLAG_TXE));
+  USART_SendData(USART1,c);
+  c = 0x30 + (n)%10;
+  while(!USART_GetFlagStatus(USART1,USART_FLAG_TXE));
+  USART_SendData(USART1,c);
+  while(!USART_GetFlagStatus(USART1,USART_FLAG_TXE));
+  USART_SendData(USART1,'\n');
+  while(!USART_GetFlagStatus(USART1,USART_FLAG_TXE));
+  USART_SendData(USART1,'\r');
 }
