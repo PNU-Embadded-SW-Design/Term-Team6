@@ -3,3 +3,6 @@ http://makeshare.org/bbs/board.php?bo_table=arduinomotor&wr_id=11
 
 수위 센서(Water Level Sensor) 제어 회로 참고용
 https://steemit.com/kr-arduino/@codingman/water-level-sensor
+
+RTC 를 이용한 초당 카운트
+https://www.programmersought.com/article/90365490359/
