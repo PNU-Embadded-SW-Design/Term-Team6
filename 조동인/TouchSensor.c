@@ -11,7 +11,8 @@ static  void  AppTask1   	(void *p_arg);
 
 void Setup(void);
 
-int TouchSig = 0;
+int TouchSig1 = 0;
+int TouchSig2 = 0;
 
 int  main (void)
 {
@@ -22,7 +23,7 @@ int  main (void)
     GPIO_InitTypeDef GPIO_InitStructure;
     
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOD,ENABLE); 
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2; // LED1(PD2)
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2 | GPIO_Pin_3; // LED1(PD2), LED2(PD3)
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_Init(GPIOD,&GPIO_InitStructure);
@@ -91,10 +92,10 @@ static  void  AppTaskStart (void *p_arg)
 
 void Setup()
 {
-   RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE); 
-   
    GPIO_InitTypeDef GPIO_InitStructure;
-   GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_8; // Touch Sensor input(PC8)
+   
+   RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE); 
+   GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_8 | GPIO_Pin_9; // Touch Sensor1(PC8), Touch Sensor2(PC9)
    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
    GPIO_Init(GPIOC, &GPIO_InitStructure);
@@ -106,10 +107,15 @@ static  void  AppTask1 (void *p_arg)
   p_arg = p_arg;
   
   while (1) {
-    TouchSig = GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_8);
+    TouchSig1 = GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_8);
+    TouchSig2 = GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_9);
     
-    // touch sensor Ω≈»£¡∏¿Áø©∫Œø° µ˚∂Û LED1 ON/OFF
-    if(TouchSig == 0) GPIO_ResetBits(GPIOD, GPIO_Pin_2); 
+    // Touch Sensor1 Ïã†Ìò∏Ï°¥Ïû¨Ïó¨Î∂ÄÏóê Îî∞Îùº LED1 ON/OFF
+    if(TouchSig1 == 0) GPIO_ResetBits(GPIOD, GPIO_Pin_2); 
     else GPIO_SetBits(GPIOD,GPIO_Pin_2);
+    
+    // Touch Sensor2 Ïã†Ìò∏Ï°¥Ïû¨Ïó¨Î∂ÄÏóê Îî∞Îùº LED2 ON/OFF
+    if(TouchSig2 == 0) GPIO_ResetBits(GPIOD, GPIO_Pin_3); 
+    else GPIO_SetBits(GPIOD,GPIO_Pin_3);
   }
 }
