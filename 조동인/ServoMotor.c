@@ -9,8 +9,7 @@ static  CPU_STK  AppTask1_Stk[128];
 static  void  AppTaskStart  	(void *p_arg); 
 static  void  AppTask1   	(void *p_arg); 
 
-void RCC_CNF(void);
-void GPIO_CNF(void);
+void Setup(void);
 void Timer_CNF(void);
 void delay(u32);
 
@@ -62,8 +61,7 @@ static  void  AppTaskStart (void *p_arg)
 
     CPU_IntDisMeasMaxCurReset();
     
-    RCC_CNF();
-    GPIO_CNF();
+    Setup();
     Timer_CNF();
     
     OSTaskCreate((OS_TCB     *)&AppTask1_TCB,
@@ -87,24 +85,21 @@ static  void  AppTaskStart (void *p_arg)
     }
 }
 
-void RCC_CNF()
+void Setup()
 {
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB , ENABLE);
-}
-
-void GPIO_CNF()
-{
-    GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_8;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(GPIOB, &GPIO_InitStructure);
+  
+  GPIO_InitTypeDef GPIO_InitStructure;
+  GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_8;
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+  GPIO_Init(GPIOB, &GPIO_InitStructure);
 }
 
 void Timer_CNF()
 {
-    TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure; // Timer ¼³Á¤  
+    TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure; // Timer ì„¤ì •  
     TIM_OCInitTypeDef  TIM_OCInitStructure;
 	
     // 50Hz Timer Clock(20ms)
@@ -114,7 +109,7 @@ void Timer_CNF()
     TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Down;
     TIM_TimeBaseInit(TIM4, &TIM_TimeBaseStructure);
     
-    TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1; // PWM mode ¼³Á¤  
+    TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1; // PWM mode ì„¤ì •  
     TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;
     TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
     TIM_OCInitStructure.TIM_Pulse = 1500;
@@ -148,7 +143,7 @@ static  void  AppTask1 (void *p_arg)
     int pwm_pulse;
     
     while (1) {
-      for(pwm_pulse = 600; pwm_pulse<=2400; pwm_pulse = pwm_pulse+900){ // -90µµ¿¡¼­ 90µµ±îÁö È¸Àü 
+      for(pwm_pulse = 600; pwm_pulse<=2400; pwm_pulse = pwm_pulse+900){ // -90ë„ì—ì„œ 90ë„ê¹Œì§€ íšŒì „ 
         change_pwm_pulse(pwm_pulse);
         delay(10000000);
       }
