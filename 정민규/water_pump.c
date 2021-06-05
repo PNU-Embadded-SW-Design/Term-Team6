@@ -20,23 +20,6 @@ int main (void){
   BSP_IntDisAll();
   OSInit(&err);
   
-  GPIO_InitTypeDef gpio_init,gpio_init2;
-  
-  //led 불빛 task 
-  RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOD,ENABLE);//clock give
-  gpio_init.GPIO_Pin = (GPIO_Pin_2 | GPIO_Pin_3| GPIO_Pin_4| GPIO_Pin_7| GPIO_Pin_11);
-  gpio_init.GPIO_Mode = GPIO_Mode_Out_PP;
-  gpio_init.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_Init(GPIOD,&gpio_init);
-  //PD11 을 이용하여 water pump 를 조정 한다.
-  
-  // 버튼 입력
-  RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC,ENABLE);
-  gpio_init2.GPIO_Pin = (GPIO_Pin_2|GPIO_Pin_3|GPIO_Pin_4|GPIO_Pin_5);
-  gpio_init2.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-  gpio_init2.GPIO_Speed = GPIO_Speed_2MHz;
-  GPIO_Init(GPIOC,&gpio_init2);
-  
   OSTaskCreate((OS_TCB     *)&AppTaskStartTCB,                /* Create the start task                                */
                  (CPU_CHAR   *)"App Task Start",
                  (OS_TASK_PTR )AppTaskStart, 
@@ -67,6 +50,24 @@ static void AppTaskStart (void *p_arg){
   cpu_clk_freq = BSP_CPU_ClkFreq();
   cnts = cpu_clk_freq / (CPU_INT32U)OSCfg_TickRate_Hz;
   OS_CPU_SysTickInit(cnts);
+  
+  GPIO_InitTypeDef gpio_init,gpio_init2;
+  
+  //led 불빛 task 
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOD,ENABLE);//clock give
+  //RCC_APB2Periph_ADC1
+  gpio_init.GPIO_Pin = (GPIO_Pin_2 | GPIO_Pin_3| GPIO_Pin_4| GPIO_Pin_7| GPIO_Pin_11);  
+  gpio_init.GPIO_Mode = GPIO_Mode_Out_PP;
+  gpio_init.GPIO_Speed = GPIO_Speed_50MHz;
+  GPIO_Init(GPIOD,&gpio_init);
+  
+  //PD11 을 이용하여 water pump 를 조정 한다.
+  // 버튼 입력
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC,ENABLE);
+  gpio_init2.GPIO_Pin = (GPIO_Pin_2|GPIO_Pin_3|GPIO_Pin_4|GPIO_Pin_5);
+  gpio_init2.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+  gpio_init2.GPIO_Speed = GPIO_Speed_2MHz;
+  GPIO_Init(GPIOC,&gpio_init2);
   
   // task 를 round robin 으로 하시 위해서 
   OSSchedRoundRobinCfg((CPU_BOOLEAN)DEF_TRUE, 
